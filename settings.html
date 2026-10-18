@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0879d5">
+<title>مركز الربيع | الإعدادات وتعديل البيانات</title>
+<style>
+:root{--blue:#087ed8;--deep:#0755b4;--glass:rgba(145,220,255,.28);--line:rgba(255,255,255,.72)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Tahoma,Arial,sans-serif;color:#fff}
+body{min-height:100svh;background:radial-gradient(ellipse at 60% 22%,#55c6ff 0,transparent 38%),radial-gradient(ellipse at 0 85%,#0062c5 0,transparent 48%),linear-gradient(145deg,#08baff,#087ad8 43%,#0054b4 75%,#0a8ce6);overflow-x:hidden;padding:20px 15px 80px}
+.page{width:min(100%,590px);margin:auto;padding-bottom:30px}
+.brand{text-align:center;margin-bottom:15px}
+.brand h1{font-size:26px;margin:0 0 5px;font-weight:900;text-shadow:0 2px 4px #0753a6}
+.brand p{margin:0;font-size:14px;color:#e6faff}
+
+.panel{background:linear-gradient(145deg,rgba(145,224,255,.53),rgba(16,121,216,.46));border:1.5px solid rgba(255,255,255,.8);border-radius:34px;padding:20px;box-shadow:inset 0 1px 8px rgba(255,255,255,.65),0 12px 35px rgba(0,42,120,.28);backdrop-filter:blur(12px);margin-bottom:15px}
+.field{height:55px;border-radius:35px;background:linear-gradient(105deg,rgba(230,249,255,.72),rgba(102,192,248,.55));border:1px solid rgba(255,255,255,.78);box-shadow:inset 0 2px 6px rgba(255,255,255,.35),0 3px 9px rgba(0,58,130,.12);display:flex;align-items:center;gap:12px;padding:5px 10px;margin:10px 0;color:#fff}
+.field .ico{width:39px;height:39px;border-radius:50%;display:grid;place-items:center;background:rgba(0,125,213,.36);border:1px solid rgba(255,255,255,.55);flex-shrink:0}
+.field .content{min-width:0;flex:1}
+.field label{display:block;font-size:12px;font-weight:bold;margin-bottom:2px;color:#d4f3ff}
+.field input,.field select{display:block;width:100%;border:0;outline:0;background:transparent;color:#fff;font:14px Tahoma,Arial;text-align:right;padding:0}
+.field input::placeholder{color:rgba(255,255,255,.85)}
+.field select option{color:#0755a8}
+
+.split{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.submit{margin-top:15px;width:100%;height:54px;border-radius:32px;border:1px solid rgba(255,255,255,.9);background:linear-gradient(90deg,#04a4f3,#0873ec,#11a9f1);color:white;font-size:20px;font-weight:900;box-shadow:inset 0 1px 6px #a9f3ff,0 0 18px rgba(0,225,255,.45);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px}
+
+.nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);width:min(95%,680px);border-radius:50px;min-height:75px;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding:5px;background:linear-gradient(120deg,rgba(159,224,255,.4),rgba(4,102,200,.46));border:1px solid rgba(255,255,255,.6);box-shadow:inset 0 1px 8px rgba(255,255,255,.35),0 8px 20px rgba(0,30,90,.2);backdrop-filter:blur(12px);z-index:100}
+.nav a{text-decoration:none;color:#bdeeff;font:12px Tahoma,Arial;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.nav .ni{font-size:22px;line-height:1}
+.nav a.active{color:#fff;font-weight:bold}
+</style>
+
+<!-- استدعاء مكتبات Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<main class="page">
+<header class="brand">
+  <h1>إعدادات الحساب</h1>
+  <p>تعديل وتحديث بيانات ولي الأمر والطفل</p>
+</header>
+
+<div class="panel">
+<form id="settingsForm">
+<div class="field"><div class="content"><label for="parent">اسم ولي الأمر</label><input id="parent" required placeholder="أدخل اسمك بالكامل"></div><div class="ico">♙</div></div>
+<div class="field"><div class="content"><label for="phone">رقم الهاتف</label><input id="phone" required type="tel" placeholder="رقم الهاتف"></div><div class="ico">☎</div></div>
+<div class="field"><div class="content"><label for="child">اسم الطفل</label><input id="child" required placeholder="اسم الطفل"></div><div class="ico">♙</div></div>
+
+<div class="split">
+<div class="field"><div class="content"><label for="birth">تاريخ الميلاد</label><input id="birth" type="date" required></div><div class="ico">▦</div></div>
+<div class="field"><div class="content"><label for="age">عمر الطفل</label><input id="age" type="number" min="0" max="99" required placeholder="العمر"></div><div class="ico">▦</div></div>
+</div>
+
+<div class="field"><div class="content"><label for="gender">الجنسية</label><select id="gender" required><option value="">اختر الجنسية</option><option>مصري</option><option>أخرى</option></select></div><div class="ico">◎</div></div>
+<div class="field"><div class="content"><label for="days">عدد أيام الحضور</label><select id="days" required><option value="">اختر الأيام</option><option>يوم واحد</option><option>يومان</option><option>3 أيام</option><option>4 أيام</option><option>يوميًا</option></select></div><div class="ico">▦</div></div>
+<div class="field"><div class="content"><label for="hours">عدد الساعات العلاجية</label><select id="hours" required><option value="">اختر الساعات</option><option>ساعة واحدة</option><option>ساعتان</option><option>3 ساعات</option><option>4 ساعات</option></select></div><div class="ico">◷</div></div>
+<div class="field"><div class="content"><label for="type">نوع الساعات العلاجية</label><select id="type" required><option value="">اختر النوع</option><option>جلسة علاج طبيعي</option><option>تأهيل حركي</option><option>تخاطب</option><option>علاج وظيفي</option></select></div><div class="ico">☷</div></div>
+
+<button class="submit" type="submit">حفظ التعديلات 💾</button>
+<p id="msg" style="display:none; text-align:center; font-size:14px; margin-top:12px; font-weight:bold; color:#e6faff;"></p>
+</form>
+</div>
+</main>
+
+<nav class="nav">
+<a href="settings.html" class="active"><span class="ni">⚙</span>الإعدادات</a>
+<a href="reports.html"><span class="ni">▤</span>التقارير</a>
+<a href="policies.html"><span class="ni">♧</span>السياسات</a>
+<a href="index-home.html"><span class="ni">⌂</span>الرئيسية</a>
+</nav>
+
+<script>
+// إعدادات Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCTPQTbz6h9oVMo1N4Y_3r_RAi1RCXSEhM",
+  authDomain: "el-rabea.firebaseapp.com",
+  projectId: "el-rabea",
+  storageBucket: "el-rabea.firebasestorage.app",
+  messagingSenderId: "527658441562",
+  appId: "1:527658441562:web:ef9d9bd5461d87eeb63163",
+  measurementId: "G-2592BQ0ZS7"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// تعبئة النموذج بالبيانات المخزنة مسبقاً عند فتح الصفحة
+const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
+if (!localData) {
+  window.location.href = 'index.html';
+} else {
+  document.getElementById('parent').value = localData.name || '';
+  document.getElementById('phone').value = localData.phone || '';
+  document.getElementById('child').value = localData.child || '';
+  document.getElementById('birth').value = localData.birth || '';
+  document.getElementById('age').value = localData.age || '';
+  document.getElementById('gender').value = localData.nationality || '';
+  document.getElementById('days').value = localData.days || '';
+  document.getElementById('hours').value = localData.hours || '';
+  document.getElementById('type').value = localData.type || '';
+}
+
+// حفظ التعديلات وتحديث البيانات في فايربيس و localStorage
+document.getElementById('settingsForm').addEventListener('submit', async function(e){
+  e.preventDefault();
+  const submitBtn = document.querySelector('.submit');
+  const msgEl = document.getElementById('msg');
+
+  const updatedData = {
+    name: document.getElementById('parent').value,
+    phone: document.getElementById('phone').value,
+    child: document.getElementById('child').value,
+    birth: document.getElementById('birth').value,
+    age: document.getElementById('age').value,
+    nationality: document.getElementById('gender').value,
+    days: document.getElementById('days').value,
+    hours: document.getElementById('hours').value,
+    type: document.getElementById('type').value,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = '0.7';
+    msgEl.style.display = 'block';
+    msgEl.textContent = '⏳ جاري تحديث البيانات وحفظها...';
+
+    // تحديث المستند في قاعدة بيانات فايربيس باستخدام الـ ID المحفوظ
+    if (localData && localData.id) {
+      await db.collection("patients").doc(localData.id).update(updatedData);
+    }
+
+    // تحديث البيانات محلياً في الذاكرة الدائمة
+    localStorage.setItem('alrabeaPatient', JSON.stringify({ id: localData.id, ...updatedData }));
+
+    msgEl.textContent = '✅ تم تعديل وحفظ البيانات بنجاح!';
+    
+    setTimeout(() => {
+      window.location.href = 'index-home.html';
+    }, 1200);
+
+  } catch (error) {
+    console.error("خطأ في التحديث:", error);
+    msgEl.style.display = 'block';
+    msgEl.textContent = '❌ حدث خطأ أثناء التحديث، تأكد من الاتصال بالإنترنت.';
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = '1';
+  }
+});
+</script>
+</body>
+</html>
