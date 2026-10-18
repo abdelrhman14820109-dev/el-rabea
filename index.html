@@ -45,7 +45,7 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 @media(max-width:600px){#splash img{width:100vw;height:auto;max-height:100svh;object-fit:contain}}
 </style>
 
-<!-- استدعاء مكتبات Firebase (Firestore) عبر CDN لتعمل مباشرة على المتصفح و Vercel -->
+<!-- استدعاء مكتبات Firebase (Firestore) عبر CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
@@ -85,6 +85,11 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 </main>
 
 <script>
+  // فحص ما إذا كان المستخدم مسجل مسبقاً، وتوجيهه للرئيسية مباشرة بدون إعادة إدخال البيانات
+  if (localStorage.getItem('alrabeaPatient')) {
+    window.location.href = 'index-home.html';
+  }
+
   // إخفاء شاشة البداية (Splash) بعد اكتمال التحميل
   window.addEventListener('load', function(){
     setTimeout(function(){
@@ -137,8 +142,8 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
       // حفظ البيانات في مجموعة "patients" على Firestore
       const docRef = await db.collection("patients").add(data);
       
-      // تخزين البيانات محلياً أيضاً لسرعة الوصول داخل الصفحات التالية
-      sessionStorage.setItem('alrabeaPatient', JSON.stringify({ id: docRef.id, ...data }));
+      // تخزين البيانات محلياً بشكل دائم باستخدام localStorage لكي يبقى مسجلاً دائماً
+      localStorage.setItem('alrabeaPatient', JSON.stringify({ id: docRef.id, ...data }));
       
       msgEl.textContent = '✅ تم التسجيل بنجاح! جاري الانتقال...';
       
