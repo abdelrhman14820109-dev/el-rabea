@@ -47,7 +47,7 @@ body:after{content:"";position:fixed;top:0;left:-20%;width:140%;height:2px;backg
 </header>
 
 <section class="glass next">
-<h2 class="heading"><span class="mini">▦</span>موعد الجلسة القادمة (محدد من المركز)</h2>
+<h2 class="heading"><span class="mini">▦</span>موعد الجلسة القادمة</h2>
 <div class="details">
 <div class="detail"><span class="symbol">📅</span><div class="label">اليوم والتاريخ</div><strong id="sessionDay">قريباً...</strong></div>
 <div class="detail"><span class="symbol">♙</span><div class="label">الطبيب المعالج</div><strong id="doctorName">يُحدد لاحقاً</strong></div>
@@ -59,9 +59,10 @@ body:after{content:"";position:fixed;top:0;left:-20%;width:140%;height:2px;backg
 </div>
 </section>
 
+<!-- أزرار تفاعل ولي الأمر مع الموعد (مرتبطة بـ Firebase) -->
 <div class="actions">
-<button class="action confirm" onclick="notify('تم تأكيد حضور الجلسة وإرسال التأكيد للمركز.')"><span class="circle">✓</span>تأكيد الحضور <span>›</span></button>
-<button class="action decline" onclick="notify('تم إرسال طلب تأجيل أو اعتذار للمركز.')"><span class="circle">×</span>الاعتذار <span>‹</span></button>
+<button class="action confirm" onclick="confirmAttendance()"><span class="circle">✓</span>تأكيد الحضور <span>›</span></button>
+<button class="action decline" onclick="apologizeSession()"><span class="circle">×</span>الاعتذار <span>‹</span></button>
 </div>
 
 <a href="policies.html" class="glass linkrow"><span class="circle">♧</span><span class="linkcopy"><strong>السياسات والقوانين</strong><small>تعرف على شروط ومواعيد وقوانين المركز</small></span><span class="chev">‹</span></a>
@@ -108,6 +109,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// جلب بيانات المريض والموعد من فايربيس
 async function loadPatientAndAppointment() {
   try {
     const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
@@ -116,17 +118,14 @@ async function loadPatientAndAppointment() {
       return;
     }
 
-    // عرض البيانات الأساسية المخزنة محلياً
     if (localData.name) document.getElementById('patientName').textContent = localData.name;
     if (localData.child) document.getElementById('childName').textContent = localData.child;
 
-    // جلب أحدث بيانات المريض والموعد المخصص من فايربيس باستخدام الـ ID الخاص بالمستند
     if (localData.id) {
       const docSnap = await db.collection("patients").doc(localData.id).get();
       if (docSnap.exists) {
         const serverData = docSnap.data();
         
-        // إذا قام الدكتور بتحديد حقول الموعد في فايربيس، سيتم عرضها هنا تلقائياً
         if (serverData.appointmentDay) document.getElementById('sessionDay').textContent = serverData.appointmentDay;
         if (serverData.sessionTime) document.getElementById('sessionTime').textContent = serverData.sessionTime;
         if (serverData.doctorName) document.getElementById('doctorName').textContent = serverData.doctorName;
@@ -135,11 +134,45 @@ async function loadPatientAndAppointment() {
       }
     }
   } catch (error) {
-    console.error("خطأ في جلب الموعد من فايربيس:", error);
+    console.error("خطأ في جلب البيانات:", error);
   }
 }
 
 loadPatientAndAppointment();
+
+// دالة تأكيد الحضور وإرسالها لـ Firebase
+async function confirmAttendance() {
+  try {
+    const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
+    if (localData && localData.id) {
+      await db.collection("patients").doc(localData.id).update({
+        attendanceStatus: "تم التأكيد بالحضور ✅",
+        statusUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      notify('✅ تم إرسال تأكيد الحضور للمركز بنجاح.');
+    }
+  } catch (error) {
+    console.error("خطأ في التحديث:", error);
+    notify('❌ حدث خطأ، تأكد من الاتصال بالإنترنت.');
+  }
+}
+
+// دالة الاعتذار عن الجلسة وإرسالها لـ Firebase
+async function apologizeSession() {
+  try {
+    const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
+    if (localData && localData.id) {
+      await db.collection("patients").doc(localData.id).update({
+        attendanceStatus: "اعتذار عن الجلسة ❌",
+        statusUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      notify('⚠️ تم إرسال طلب الاعتذار للمركز بنجاح.');
+    }
+  } catch (error) {
+    console.error("خطأ في التحديث:", error);
+    notify('❌ حدث خطأ، تأكد من الاتصال بالإنترنت.');
+  }
+}
 
 function logout(){
   localStorage.removeItem('alrabeaPatient');
