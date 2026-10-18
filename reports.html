@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0879d5">
+<title>مركز الربيع | التقارير الطبية</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Tahoma,Arial,sans-serif;color:#fff}
+body{min-height:100svh;background:radial-gradient(ellipse at 60% 22%,#55c6ff 0,transparent 38%),radial-gradient(ellipse at 0 85%,#0062c5 0,transparent 48%),linear-gradient(145deg,#08baff,#087ad8 43%,#0054b4 75%,#0a8ce6);overflow-x:hidden;padding:20px 15px}
+.page{width:min(100%,680px);margin:auto;padding-bottom:70px}
+.brand{text-align:center;margin-bottom:20px}
+.brand h1{font-size:26px;margin:0 0 5px;font-weight:900;text-shadow:0 2px 4px #0753a6}
+.brand p{margin:0;font-size:14px;color:#e6faff}
+
+.glass{background:linear-gradient(135deg,rgba(135,219,255,.35),rgba(13,116,215,.4));border:1px solid rgba(255,255,255,.66);border-radius:25px;padding:25px 20px;margin-bottom:15px;box-shadow:inset 0 1px 8px rgba(255,255,255,.3),0 8px 20px rgba(0,40,110,.16);backdrop-filter:blur(10px);text-align:center}
+.empty-state{font-size:16px;line-height:1.8;color:#eafaff;padding:20px 0}
+.empty-icon{font-size:45px;margin-bottom:12px;display:block}
+
+.back-btn{display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;background:linear-gradient(90deg,#04a4f3,#0873ec,#11a9f1);color:#fff;padding:15px;border-radius:32px;text-decoration:none;font-size:18px;font-weight:bold;margin-top:25px;border:1px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 6px #a9f3ff,0 0 18px rgba(0,225,255,.35);cursor:pointer}
+
+.nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);width:min(95%,680px);border-radius:50px;min-height:75px;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding:5px;background:linear-gradient(120deg,rgba(159,224,255,.4),rgba(4,102,200,.46));border:1px solid rgba(255,255,255,.6);box-shadow:inset 0 1px 8px rgba(255,255,255,.35),0 8px 20px rgba(0,30,90,.2);backdrop-filter:blur(12px);z-index:100}
+.nav a{text-decoration:none;color:#bdeeff;font:12px Tahoma,Arial;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.nav .ni{font-size:22px;line-height:1}
+.nav a.active{color:#fff;font-weight:bold}
+</style>
+
+<!-- استدعاء مكتبات Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<main class="page">
+<header class="brand">
+  <h1>التقارير الطبية ومتابعة الحالة</h1>
+  <p>مركز الربيع للعلاج الطبيعي وتأهيل الأطفال</p>
+</header>
+
+<div class="glass" id="reportCard">
+  <div class="empty-state">
+    <span class="empty-icon">📂</span>
+    <strong>لا توجد تقارير متاحة حالياً</strong>
+    <p style="margin-top:10px; font-size:14px; color:#d4f3ff;">ستظهر هنا تقارير وملاحظات الطبيب المعالج فور إضافتها لتحديث حالة طفلك.</p>
+  </div>
+</div>
+
+<a href="index-home.html" class="back-btn">العودة إلى الصفحة الرئيسية 🏠</a>
+</main>
+
+<nav class="nav">
+<a href="settings.html"><span class="ni">⚙</span>الإعدادات</a>
+<a href="reports.html" class="active"><span class="ni">▤</span>التقارير</a>
+<a href="policies.html"><span class="ni">♧</span>السياسات</a>
+<a href="index-home.html"><span class="ni">⌂</span>الرئيسية</a>
+</nav>
+
+<script>
+// إعدادات Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCTPQTbz6h9oVMo1N4Y_3r_RAi1RCXSEhM",
+  authDomain: "el-rabea.firebaseapp.com",
+  projectId: "el-rabea",
+  storageBucket: "el-rabea.firebasestorage.app",
+  messagingSenderId: "527658441562",
+  appId: "1:527658441562:web:ef9d9bd5461d87eeb63163",
+  measurementId: "G-2592BQ0ZS7"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// فحص وجود تقارير مرفوعة من الطبيب في قاعدة البيانات
+async function loadReport() {
+  try {
+    const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
+    if (!localData) {
+      window.location.href = 'index.html';
+      return;
+    }
+
+    if (localData.id) {
+      const docSnap = await db.collection("patients").doc(localData.id).get();
+      if (docSnap.exists) {
+        const data = docSnap.data();
+        
+        // إذا قام الطبيب بإضافة حقل doctorReport أو reportText في فايربيس، سيتم عرضه هنا
+        if (data.doctorReport || data.reportText) {
+          const reportContent = data.doctorReport || data.reportText;
+          document.getElementById('reportCard').innerHTML = `
+            <h3 style="color:#c9f2ff; margin-top:0; text-align:right; font-size:19px;">📄 تقرير الطبيب المعالج</h3>
+            <p style="text-align:right; font-size:16px; line-height:1.8; color:#fff; white-space: pre-line; margin-top:12px;">${reportContent}</p>
+          `;
+        }
+      }
+    }
+  } catch (e) {
+    console.error("خطأ في جلب التقرير:", e);
+  }
+}
+
+loadReport();
+</script>
+</body>
+</html>
