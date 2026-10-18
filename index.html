@@ -1,7 +1,11 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+  <!-- استدعاء مكتبات فايربيس (Firestore + Messaging) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-compat.js"></script>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0879d5">
@@ -45,10 +49,6 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 #splash.hide{opacity:0;visibility:hidden;pointer-events:none}
 @media(max-width:600px){#splash img{width:100vw;height:auto;max-height:100svh;object-fit:contain}}
 </style>
-
-<!-- استدعاء مكتبات Firebase (Firestore) عبر CDN -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div id="splash" aria-label="أنيميشن مركز الربيع"><img src="alrabea-animation.gif" alt="أنيميشن مركز الربيع"></div>
@@ -86,12 +86,12 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 </main>
 
 <script>
-  // فحص ما إذا كان المستخدم مسجل مسبقاً، وتوجيهه للرئيسية مباشرة بدون إعادة إدخال البيانات
+  // فحص ما إذا كان المستخدم مسجل مسبقاً
   if (localStorage.getItem('alrabeaPatient')) {
     window.location.href = 'index-home.html';
   }
 
-  // إخفاء شاشة البداية (Splash) بعد اكتمال التحميل
+  // إخفاء شاشة البداية (Splash)
   window.addEventListener('load', function(){
     setTimeout(function(){
       var splash = document.getElementById('splash');
@@ -99,7 +99,7 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
     }, 2300);
   });
 
-  // إعدادات Firebase الخاصة بمشروعك
+  // إعدادات Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyCTPQTbz6h9oVMo1N4Y_3r_RAi1RCXSEhM",
     authDomain: "el-rabea.firebaseapp.com",
@@ -110,9 +110,34 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
     measurementId: "G-2592BQ0ZS7"
   };
 
-  // تهيئة Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
+  const messaging = firebase.messaging();
+
+  // دالة طلب إذن الإشعارات وحفظ الرمز الخاص بالجهاز في قاعدة البيانات
+  async function requestNotificationPermission(patientDocId) {
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        // الحصول على رمز الجهاز (FCM Token)
+        // ملاحظة: استبدل النص أدناه بمفتاح VAPID Key الخاص بك من لوحة تحكم فايربيس (Cloud Messaging -> Web Push certificates)
+        const token = await messaging.getToken({ 
+          vapidKey: 'BM_YOUR_VAPID_KEY_HERE' 
+        });
+        
+        if (token) {
+          await db.collection("patients").doc(patientDocId).update({
+            fcmToken: token
+          });
+          console.log("تم تفعيل وحفظ رمز الإشعارات بنجاح.");
+        }
+      } else {
+        console.log('تم رفض إذن الإشعارات من قبل المستخدم.');
+      }
+    } catch (error) {
+      console.error('خطأ أثناء طلب إذن الإشعارات:', error);
+    }
+  }
 
   // معالجة إرسال النموذج وحفظه في Firebase Firestore
   document.getElementById('loginForm').addEventListener('submit', async function(e){
@@ -138,17 +163,19 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
       submitBtn.disabled = true;
       submitBtn.style.opacity = '0.7';
       msgEl.style.display = 'block';
-      msgEl.textContent = '⏳ جاري حفظ البيانات وفتح التطبيق...';
+      msgEl.textContent = '⏳ جاري حفظ البيانات وتفعيل الإشعارات...';
 
       // حفظ البيانات في مجموعة "patients" على Firestore
       const docRef = await db.collection("patients").add(data);
       
-      // تخزين البيانات محلياً بشكل دائم باستخدام localStorage لكي يبقى مسجلاً دائماً
+      // طلب إذن الإشعارات وحفظ الرمز في المستند الجديد
+      await requestNotificationPermission(docRef.id);
+      
+      // تخزين البيانات محلياً بشكل دائم
       localStorage.setItem('alrabeaPatient', JSON.stringify({ id: docRef.id, ...data }));
       
       msgEl.textContent = '✅ تم التسجيل بنجاح! جاري الانتقال...';
       
-      // التوجيه للصفحة الرئيسية بعد ثانية
       setTimeout(() => {
         window.location.href = 'index-home.html';
       }, 1000);
