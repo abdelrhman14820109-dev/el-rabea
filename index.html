@@ -400,5 +400,39 @@ img,svg,video,canvas{max-width:100%}
     }
   });
 </script>
+  <!-- نافذة تنبيه انقطاع الإنترنت -->
+<div id="offlineOverlay" style="display:none; position:fixed; inset:0; z-index:99999; background:linear-gradient(145deg,rgba(0,50,120,.92),rgba(0,100,200,.95)); backdrop-filter:blur(15px); display:flex; align-items:center; justify-content:center; padding:20px; text-align:center;">
+  <div style="background:linear-gradient(145deg,rgba(145,224,255,.3),rgba(16,121,216,.4)); border:1.5px solid rgba(255,255,255,.8); border-radius:30px; padding:30px 22px; max-width:400px; width:100%; box-shadow:0 15px 35px rgba(0,20,70,.5); color:#fff;">
+    <div style="width:70px; height:70px; margin:0 auto 15px; border-radius:50%; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.5); display:grid; place-items:center; font-size:35px;">
+      📡
+    </div>
+    <h2 style="font-size:22px; margin:0 0 10px; font-weight:900;">لا يوجد اتصال بالإنترنت</h2>
+    <p style="font-size:14px; line-height:1.6; color:#d6f4ff; margin:0 0 20px;">
+      يبدو أنك غير متصل بالشبكة حالياً. يرجى تفعيل Wi-Fi أو بيانات الهاتف للمتابعة واستخدام خدمات مركز الربيع.
+    </p>
+    <button onclick="checkConnection()" style="width:100%; height:48px; border-radius:25px; border:1px solid #fff; background:linear-gradient(90deg,#04a4f3,#0873ec); color:#fff; font-size:18px; font-weight:bold; cursor:pointer; box-shadow:0 0 15px rgba(0,200,255,.4);">
+      إعادة المحاولة 🔄
+    </button>
+  </div>
+</div>
+
+<script>
+  // فحص حالة الاتصال بالإنترنت
+  function checkConnection() {
+    const overlay = document.getElementById('offlineOverlay');
+    if (!navigator.onLine) {
+      overlay.style.display = 'flex';
+    } else {
+      overlay.style.display = 'none';
+    }
+  }
+
+  // الاستماع لتغيرات الشبكة تلقائياً
+  window.addEventListener('offline', checkConnection);
+  window.addEventListener('online', checkConnection);
+  
+  // تشغيل الفحص فور فتح الصفحة
+  document.addEventListener('DOMContentLoaded', checkConnection);
+</script>
 </body>
 </html>
