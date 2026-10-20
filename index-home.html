@@ -54,8 +54,8 @@ body:after{content:"";position:fixed;top:0;left:-20%;width:140%;height:2px;backg
 <div class="detail"><span class="symbol">◷</span><div class="label">الساعة</div><strong id="sessionTime">قريباً...</strong></div>
 </div>
 <div class="subdetails">
-<div class="subdetail"><span class="symbol">♧</span><div><div class="label">نوع الجلسة</div><strong id="sessionType">علاج طبيعي</strong></div></div>
-<div class="subdetail"><span class="symbol">⏱️</span><div><div class="label">مدة الجلسة</div><strong id="sessionDuration">ساعة واحدة</strong></div></div>
+<div class="subdetail"><span class="symbol">♧</span><div><div class="label">نوع الجلسة</div><strong id="sessionType">جاري التحميل...</strong></div></div>
+<div class="subdetail"><span class="symbol">⏱️</span><div><div class="label">عدد الساعات</div><strong id="sessionDuration">جاري التحميل...</strong></div></div>
 </div>
 </section>
 
@@ -109,7 +109,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// جلب بيانات المريض والموعد من فايربيس
+// جلب بيانات المريض والموعد وتحديث الشاشة ديناميكياً
 async function loadPatientAndAppointment() {
   try {
     const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
@@ -118,9 +118,15 @@ async function loadPatientAndAppointment() {
       return;
     }
 
+    // عرض البيانات الأساسية المخزنة محلياً فوراً
     if (localData.name) document.getElementById('patientName').textContent = localData.name;
     if (localData.child) document.getElementById('childName').textContent = localData.child;
+    
+    // عرض نوع الجلسة وعدد الساعات الحقيقية التي اخترتها أثناء التسجيل
+    if (localData.type) document.getElementById('sessionType').textContent = localData.type;
+    if (localData.hours) document.getElementById('sessionDuration').textContent = localData.hours;
 
+    // جلب التحديثات من فايربيس (مثل مواعيد الجلسة أو اسم الطبيب إن وجد)
     if (localData.id) {
       const docSnap = await db.collection("patients").doc(localData.id).get();
       if (docSnap.exists) {
@@ -129,8 +135,10 @@ async function loadPatientAndAppointment() {
         if (serverData.appointmentDay) document.getElementById('sessionDay').textContent = serverData.appointmentDay;
         if (serverData.sessionTime) document.getElementById('sessionTime').textContent = serverData.sessionTime;
         if (serverData.doctorName) document.getElementById('doctorName').textContent = serverData.doctorName;
-        if (serverData.sessionType) document.getElementById('sessionType').textContent = serverData.sessionType;
-        if (serverData.sessionDuration) document.getElementById('sessionDuration').textContent = serverData.sessionDuration;
+        
+        // لو تم تحديث النوع أو الساعات من لوحة التحكم الرئيسية لاحقاً
+        if (serverData.type) document.getElementById('sessionType').textContent = serverData.type;
+        if (serverData.hours) document.getElementById('sessionDuration').textContent = serverData.hours;
       }
     }
   } catch (error) {
