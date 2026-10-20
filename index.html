@@ -72,12 +72,14 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 <div class="field"><div class="content"><label for="child">اسم الطفل</label><input id="child" required placeholder="أدخل اسم الطفل"></div><div class="ico">♙</div></div>
 <div class="split">
 <div class="field"><div class="content"><label for="birth">تاريخ الميلاد</label><input id="birth" type="date" required aria-label="تاريخ الميلاد"></div><div class="ico">▦</div></div>
-<div class="field"><div class="content"><label for="age">عمر الطفل</label><input id="age" type="number" min="0" max="99" required placeholder="أدخل عمر الطفل"></div><div class="ico">▦</div></div>
+<div class="field" style="display:grid;grid-template-columns:1fr auto;gap:5px;padding-right:10px;">
+  <div class="content"><label for="ageNum">عمر الطفل</label><input id="ageNum" type="number" min="0" max="99" required placeholder="الرقم"></div>
+  <div style="align-self:center;"><select id="ageUnit" style="background:transparent;color:#fff;border:0;outline:0;font-weight:bold;"><option value="سنة">سنة</option><option value="أشهر">أشهر</option></select></div>
+</div>
 </div>
 <div class="field"><div class="content"><label for="gender">الجنسية</label><select id="gender" required><option value="">اختر الجنسية</option><option>مصري</option><option>أخرى</option></select></div><div class="ico">◎</div></div>
-<div class="field"><div class="content"><label for="days">عدد أيام الحضور في المركز</label><select id="days" required><option value="">أدخل عدد الأيام</option><option>يوم واحد</option><option>يومان</option><option>3 أيام</option><option>4 أيام</option><option>يوميًا</option></select></div><div class="ico">▦</div></div>
-<div class="field"><div class="content"><label for="hours">عدد ساعات العلاجية</label><select id="hours" required><option value="">أدخل عدد الساعات</option><option>ساعة واحدة</option><option>ساعتان</option><option>3 ساعات</option><option>4 ساعات</option></select></div><div class="ico">◷</div></div>
-<div class="field"><div class="content"><label for="type">نوع الساعات العلاجية</label><select id="type" required><option value="">اختر نوع الساعات العلاجية</option><option>جلسة علاج طبيعي</option><option>تأهيل حركي</option><option>تخاطب</option><option>علاج وظيفي</option></select></div><div class="ico">☷</div></div>
+<div class="field"><div class="content"><label for="days">أيام الحضور في المركز</label><select id="days" required><option value="">اختر أيام الحضور</option><option>السبت والإثنين والأربعاء</option><option>الأحد والثلاثاء والخميس</option><option>السبت والأربعاء</option><option>الأحد والخميس</option><option>يوميًا</option></select></div><div class="ico">▦</div></div>
+<div class="field"><div class="content"><label for="type">نوع الجلسة العلاجية</label><select id="type" required><option value="">اختر نوع الجلسة</option><option>علاج طبيعي</option><option>تحفيز كهربي</option><option>علاج وظيفي</option><option>تحكم في البول والبراز</option><option>تخاطب</option><option>تنمية مهارات</option><option>تكامل حسي</option></select></div><div class="ico">☷</div></div>
 <button class="submit" type="submit">دخول <span>➜</span></button>
 <p id="msg" role="status" style="display:none;text-align:center;font-size:14px;margin-top:10px;font-weight:bold;color:#e6faff;"></p>
 </form>
@@ -119,8 +121,6 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
     try {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
-        // الحصول على رمز الجهاز (FCM Token)
-        // ملاحظة: استبدل النص أدناه بمفتاح VAPID Key الخاص بك من لوحة تحكم فايربيس (Cloud Messaging -> Web Push certificates)
         const token = await messaging.getToken({ 
           vapidKey: 'BN6reyf4L258uP1PtjZBk6Du4J9p-OWFUmd0Xg3hQRXf5eAebUW4VOqkXFo106_OhIWfEoxXtLyzBIykj7BNPrY' 
         });
@@ -146,16 +146,19 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
     const submitBtn = document.querySelector('.submit');
     const msgEl = document.getElementById('msg');
     
+    // دمج الرقم مع وحدة العمر (سنة أو أشهر)
+    const ageValue = document.getElementById('ageNum').value + " " + document.getElementById('ageUnit').value;
+
     const data = {
       name: document.getElementById('parent').value,
       phone: document.getElementById('phone').value,
       child: document.getElementById('child').value,
       birth: document.getElementById('birth').value,
-      age: document.getElementById('age').value,
+      age: ageValue,
       nationality: document.getElementById('gender').value,
       days: document.getElementById('days').value,
-      hours: document.getElementById('hours').value,
       type: document.getElementById('type').value,
+      attendanceStatus: "قيد الانتظار",
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
