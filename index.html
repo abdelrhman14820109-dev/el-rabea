@@ -30,6 +30,7 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 .person-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);flex-shrink:0}
 .panel-head h2{font-size:24px;margin:0 0 4px}.panel-head small{font-size:11px;color:#e9faff}
 .field{height:55px;border-radius:35px;background:linear-gradient(105deg,rgba(230,249,255,.72),rgba(102,192,248,.55));border:1px solid rgba(255,255,255,.78);box-shadow:inset 0 2px 6px rgba(255,255,255,.35),0 3px 9px rgba(0,58,130,.12);display:flex;align-items:center;gap:12px;padding:5px 10px;margin:8px 0;color:#fff}
+.field.auto-height{height:auto;min-height:55px;padding:12px 14px;border-radius:24px;display:block;}
 .field .ico{width:39px;height:39px;border-radius:50%;display:grid;place-items:center;background:rgba(0,125,213,.36);border:1px solid rgba(255,255,255,.55);flex-shrink:0}
 .field .content{min-width:0;flex:1}
 .field label{display:block;font-size:13px;font-weight:bold;margin-bottom:3px}
@@ -77,9 +78,61 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
   <div style="align-self:center;"><select id="ageUnit" style="background:transparent;color:#fff;border:0;outline:0;font-weight:bold;"><option value="سنة">سنة</option><option value="أشهر">أشهر</option></select></div>
 </div>
 </div>
-<div class="field"><div class="content"><label for="gender">الجنسية</label><select id="gender" required><option value="">اختر الجنسية</option><option>مصري</option><option>أخرى</option></select></div><div class="ico">◎</div></div>
-<div class="field"><div class="content"><label for="days">أيام الحضور في المركز</label><select id="days" required><option value="">اختر أيام الحضور</option><option>السبت والإثنين والأربعاء</option><option>الأحد والثلاثاء والخميس</option><option>السبت والأربعاء</option><option>الأحد والخميس</option><option>يوميًا</option></select></div><div class="ico">▦</div></div>
-<div class="field"><div class="content"><label for="type">نوع الجلسة العلاجية</label><select id="type" required><option value="">اختر نوع الجلسة</option><option>علاج طبيعي</option><option>تحفيز كهربي</option><option>علاج وظيفي</option><option>تحكم في البول والبراز</option><option>تخاطب</option><option>تنمية مهارات</option><option>تكامل حسي</option></select></div><div class="ico">☷</div></div>
+
+<div class="field">
+  <div class="content">
+    <label for="nationality">الجنسية</label>
+    <select id="nationality" required>
+      <option value="">اختر الجنسية</option>
+      <option value="مصري">مصري</option>
+      <option value="سوداني">سوداني</option>
+      <option value="سوري">سوري</option>
+      <option value="فلسطيني">فلسطيني</option>
+      <option value="سعودي">سعودي</option>
+      <option value="ليبي">ليبي</option>
+      <option value="يمني">يمني</option>
+      <option value="أخرى">جنسية أخرى</option>
+    </select>
+  </div>
+  <div class="ico">◎</div>
+</div>
+
+<!-- اختيار أيام الحضور الفردية أو يومياً -->
+<div class="field auto-height">
+  <label style="font-size:13px; font-weight:bold; margin-bottom:10px; display:block;">أيام الحضور في المركز (اختر الأيام أو يومياً):</label>
+  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:8px;">
+    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" name="day" value="السبت"> السبت</label>
+    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" name="day" value="الأحد"> الأحد</label>
+    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" name="day" value="الإثنين"> الإثنين</label>
+    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" name="day" value="الثلاثاء"> الثلاثاء</label>
+    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" name="day" value="الأربعاء"> الأربعاء</label>
+    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" name="day" value="الخميس"> الخميس</label>
+    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" name="day" value="الجمعة"> الجمعة</label>
+  </div>
+  <div style="border-top:1px solid rgba(255,255,255,0.3); padding-top:8px; margin-top:4px;">
+    <label style="display:flex; align-items:center; gap:6px; font-size:14px; font-weight:bold; cursor:pointer; color:#e6faff;">
+      <input type="checkbox" id="dailyCheck" value="يوميًا"> حضور يومي (كل أيام الأسبوع)
+    </label>
+  </div>
+</div>
+
+<div class="field">
+  <div class="content">
+    <label for="type">نوع الجلسة العلاجية</label>
+    <select id="type" required>
+      <option value="">اختر نوع الجلسة</option>
+      <option value="علاج طبيعي">علاج طبيعي</option>
+      <option value="تحفيز كهربي">تحفيز كهربي</option>
+      <option value="علاج وظيفي">علاج وظيفي</option>
+      <option value="تحكم في البول والبراز">تحكم في البول والبراز</option>
+      <option value="تخاطب">تخاطب</option>
+      <option value="تنمية مهارات">تنمية مهارات</option>
+      <option value="تكامل حسي">تكامل حسي</option>
+    </select>
+  </div>
+  <div class="ico">☷</div>
+</div>
+
 <button class="submit" type="submit">دخول <span>➜</span></button>
 <p id="msg" role="status" style="display:none;text-align:center;font-size:14px;margin-top:10px;font-weight:bold;color:#e6faff;"></p>
 </form>
@@ -146,8 +199,26 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
     const submitBtn = document.querySelector('.submit');
     const msgEl = document.getElementById('msg');
     
-    // دمج الرقم مع وحدة العمر (سنة أو أشهر)
+    // تجميع العمر (الرقم + سنة أو أشهر)
     const ageValue = document.getElementById('ageNum').value + " " + document.getElementById('ageUnit').value;
+
+    // تجميع الأيام المختارة
+    let daysValue = "";
+    const dailyChecked = document.getElementById('dailyCheck').checked;
+    
+    if (dailyChecked) {
+      daysValue = "يوميًا (كل الأيام)";
+    } else {
+      const selectedDays = [];
+      document.querySelectorAll('input[name="day"]:checked').forEach((cb) => {
+        selectedDays.push(cb.value);
+      });
+      if (selectedDays.length === 0) {
+        alert("الرجاء اختيار يوم واحد على الأقل للحضور أو تحديد حضور يومي.");
+        return;
+      }
+      daysValue = selectedDays.join('، ');
+    }
 
     const data = {
       name: document.getElementById('parent').value,
@@ -155,8 +226,8 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
       child: document.getElementById('child').value,
       birth: document.getElementById('birth').value,
       age: ageValue,
-      nationality: document.getElementById('gender').value,
-      days: document.getElementById('days').value,
+      nationality: document.getElementById('nationality').value,
+      days: daysValue,
       type: document.getElementById('type').value,
       attendanceStatus: "قيد الانتظار",
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
