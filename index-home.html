@@ -55,19 +55,36 @@ body:after{content:"";position:fixed;top:0;left:-20%;width:140%;height:2px;backg
 </div>
 <div class="subdetails">
 <div class="subdetail"><span class="symbol">♧</span><div><div class="label">نوع الجلسة</div><strong id="sessionType">جاري التحميل...</strong></div></div>
-<div class="subdetail"><span class="symbol">⏱️</span><div><div class="label">عدد الساعات</div><strong id="sessionDuration">جاري التحميل...</strong></div></div>
+<div class="subdetail"><span class="symbol">⏱️</span><div><div class="label">أيام الحضور</div><strong id="sessionDaysList">جاري التحميل...</strong></div></div>
 </div>
 </section>
 
-<!-- أزرار تفاعل ولي الأمر مع الموعد (مرتبطة بـ Firebase) -->
+<!-- أزرار تفاعل ولي الأمر مع الموعد -->
 <div class="actions">
 <button class="action confirm" onclick="confirmAttendance()"><span class="circle">✓</span>تأكيد الحضور <span>›</span></button>
 <button class="action decline" onclick="apologizeSession()"><span class="circle">×</span>الاعتذار <span>‹</span></button>
 </div>
 
-<a href="policies.html" class="glass linkrow"><span class="circle">♧</span><span class="linkcopy"><strong>السياسات والقوانين</strong><small>تعرف على شروط ومواعيد وقوانين المركز</small></span><span class="chev">‹</span></a>
-<a href="#" onclick="logout()" class="glass linkrow" style="background:linear-gradient(135deg,rgba(255,100,100,.4),rgba(200,20,20,.4));"><span class="circle">🔄</span><span class="linkcopy"><strong>تسجيل خروج</strong><small>مسح البيانات المحفوظة والبدء من جديد</small></span><span class="chev">‹</span></a>
+<!-- الزر الكبير الجديد: طلباتي بدلاً من السياسات والقوانين -->
+<a href="my-requests.html" class="glass linkrow">
+  <span class="circle">📦</span>
+  <span class="linkcopy">
+    <strong>طلباتي</strong>
+    <small>متابعة الطلبات، الجلسات، وحالة الدفع</small>
+  </span>
+  <span class="chev">‹</span>
+</a>
 
+<a href="#" onclick="logout()" class="glass linkrow" style="background:linear-gradient(135deg,rgba(255,100,100,.4),rgba(200,20,20,.4));">
+  <span class="circle">🔄</span>
+  <span class="linkcopy">
+    <strong>تسجيل خروج</strong>
+    <small>مسح البيانات المحفوظة والبدء من جديد</small>
+  </span>
+  <span class="chev">‹</span>
+</a>
+
+<!-- القائمة السفلية مع الإبقاء على خيار السياسات كما هو -->
 <nav class="nav">
 <a href="settings.html"><span class="ni">⚙</span>الإعدادات</a>
 <a href="reports.html"><span class="ni">▤</span>التقارير</a>
@@ -118,15 +135,11 @@ async function loadPatientAndAppointment() {
       return;
     }
 
-    // عرض البيانات الأساسية المخزنة محلياً فوراً
     if (localData.name) document.getElementById('patientName').textContent = localData.name;
     if (localData.child) document.getElementById('childName').textContent = localData.child;
-    
-    // عرض نوع الجلسة وعدد الساعات الحقيقية التي اخترتها أثناء التسجيل
     if (localData.type) document.getElementById('sessionType').textContent = localData.type;
-    if (localData.hours) document.getElementById('sessionDuration').textContent = localData.hours;
+    if (localData.days) document.getElementById('sessionDaysList').textContent = localData.days;
 
-    // جلب التحديثات من فايربيس (مثل مواعيد الجلسة أو اسم الطبيب إن وجد)
     if (localData.id) {
       const docSnap = await db.collection("patients").doc(localData.id).get();
       if (docSnap.exists) {
@@ -135,10 +148,8 @@ async function loadPatientAndAppointment() {
         if (serverData.appointmentDay) document.getElementById('sessionDay').textContent = serverData.appointmentDay;
         if (serverData.sessionTime) document.getElementById('sessionTime').textContent = serverData.sessionTime;
         if (serverData.doctorName) document.getElementById('doctorName').textContent = serverData.doctorName;
-        
-        // لو تم تحديث النوع أو الساعات من لوحة التحكم الرئيسية لاحقاً
         if (serverData.type) document.getElementById('sessionType').textContent = serverData.type;
-        if (serverData.hours) document.getElementById('sessionDuration').textContent = serverData.hours;
+        if (serverData.days) document.getElementById('sessionDaysList').textContent = serverData.days;
       }
     }
   } catch (error) {
@@ -148,7 +159,6 @@ async function loadPatientAndAppointment() {
 
 loadPatientAndAppointment();
 
-// دالة تأكيد الحضور وإرسالها لـ Firebase
 async function confirmAttendance() {
   try {
     const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
@@ -165,7 +175,6 @@ async function confirmAttendance() {
   }
 }
 
-// دالة الاعتذار عن الجلسة وإرسالها لـ Firebase
 async function apologizeSession() {
   try {
     const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
