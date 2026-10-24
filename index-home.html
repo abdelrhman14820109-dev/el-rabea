@@ -34,6 +34,37 @@ body:after{content:"";position:fixed;top:0;left:-20%;width:140%;height:2px;backg
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+  <script>
+// التحقق مما إذا كان الأنيميشن قد ظهر مسبقاً في هذه الجلسة
+window.addEventListener('load', function(){
+  const splashShown = sessionStorage.getItem('splashShown');
+  var splash = document.getElementById('splash');
+
+  if (splashShown) {
+    // إذا كان قد ظهر من قبل، قم بإخفائه فوراً بدون انتظار
+    if(splash) splash.style.display = 'none';
+  } else {
+    // إذا كانت المرة الأولى لتشغيل التطبيق، اعرضه لمدة 2.3 ثانية ثم اخفه واحفظ أنه ظهر
+    setTimeout(function(){
+      if(splash) {
+        splash.classList.add('hide');
+        setTimeout(() => splash.style.display = 'none', 450); // إزالة العنصر تماماً بعد انتهاء الأنيميشن
+      }
+      sessionStorage.setItem('splashShown', 'true');
+    }, 2300);
+  }
+});
+
+function notify(message){
+  const n = document.getElementById('notice');
+  n.textContent = message;
+  n.style.display = 'block';
+  clearTimeout(window.noticeTimer);
+  window.noticeTimer = setTimeout(() => n.style.display = 'none', 3000);
+}
+
+// باقي كود الـ Firebase ودوال الح الصفحة كما هي...
+</script>
 <div id="splash" aria-label="أنيميشن مركز الربيع"><img src="alrabea-animation.gif" alt="أنيميشن مركز الربيع"></div>
 
 <main class="page">
