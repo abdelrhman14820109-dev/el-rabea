@@ -43,7 +43,7 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 .submit span{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#29bff4;border:1px solid #b9f8ff}
 .footer{text-align:center;font-weight:bold;font-size:13px;margin:17px auto 0;color:#eafaff;display:flex;gap:12px;align-items:center;justify-content:center}.footer:before,.footer:after{content:"";height:1px;background:rgba(255,255,255,.75);width:48px}
 
-/* تصميم اختيار الأيام */
+/* تصميم اختيار الأيام والساعات */
 .days-field{padding:14px 14px 13px!important}
 .days-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
 .days-title label{font-size:14px!important;margin:0!important}
@@ -58,6 +58,18 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 .day-card:hover .day-inner{transform:translateY(-2px);background:rgba(255,255,255,.2)}
 .day-card input:checked + .day-inner{background:linear-gradient(145deg,#18bdf5,#0874db);border-color:rgba(255,255,255,.95);box-shadow:0 5px 14px rgba(0,41,130,.28),inset 0 1px 6px rgba(255,255,255,.48);transform:translateY(-2px)}
 .day-card input:checked + .day-inner:after{content:"✓";position:absolute;top:3px;right:5px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#087ed8;font-size:10px;font-weight:900}
+
+/* شبكة اختيار الساعات (1 إلى 5) */
+.hours-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.hour-card{position:relative;cursor:pointer;margin:0!important}
+.hour-card input{position:absolute;opacity:0;pointer-events:none}
+.hour-inner{height:50px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.32);transition:.22s ease}
+.hour-inner b{font-size:13px;color:#fff}
+.hour-inner small{font-size:8px;color:#d9f7ff}
+.hour-card:hover .hour-inner{background:rgba(255,255,255,.2)}
+.hour-card input:checked + .hour-inner{background:linear-gradient(145deg,#18bdf5,#0874db);border-color:#fff;box-shadow:0 4px 12px rgba(0,41,130,.3)}
+.hour-card input:checked + .hour-inner:after{content:"✓";position:absolute;top:2px;right:4px;width:14px;height:14px;border-radius:50%;display:grid;place-items:center;background:#fff;color:#087ed8;font-size:9px;font-weight:900}
+
 .daily-card{margin:10px 0 0!important;min-height:52px;padding:7px 9px;border-radius:20px;display:flex!important;align-items:center!important;gap:9px!important;background:linear-gradient(105deg,rgba(255,255,255,.16),rgba(31,166,238,.23));border:1px solid rgba(255,255,255,.4);cursor:pointer;transition:.22s ease}
 .daily-card input{position:absolute;opacity:0;pointer-events:none}
 .daily-icon{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);font-weight:900;color:transparent;transition:.2s}
@@ -68,6 +80,7 @@ body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),t
 .daily-card:has(input:checked){background:linear-gradient(105deg,#08aaf0,#0875d8);border-color:#fff;box-shadow:0 5px 16px rgba(0,50,145,.28)}
 .daily-card:has(input:checked) .daily-icon{background:#fff;color:#087ed8}
 .daily-card:has(input:checked) .daily-arrow{transform:rotate(-45deg)}
+
 @media(max-width:370px){
   .days-grid{grid-template-columns:repeat(3,1fr);gap:6px}
   .day-inner{height:54px;border-radius:16px}
@@ -127,7 +140,6 @@ img,svg,video,canvas{max-width:100%}
     padding-right:9px;
   }
 }
-
 </style>
 </head>
 <body>
@@ -153,7 +165,6 @@ img,svg,video,canvas{max-width:100%}
 <div class="field" style="display:grid;grid-template-columns:1fr auto;gap:5px;padding-right:10px;">
   <div class="content"><label for="ageNum">عمر الطفل</label><input id="ageNum" type="number" min="0" max="99" required placeholder="الرقم"></div>
   <div style="align-self:center;"><select id="ageUnit" style="background:transparent;color:#fff;border:0;outline:0;font-weight:bold;"><option value="سنة">سنة</option><option value="أشهر">أشهر</option></select></div>
-</div>
 </div>
 
 <div class="field">
@@ -221,6 +232,39 @@ img,svg,video,canvas{max-width:100%}
     <span class="daily-text"><b>حضور يومي</b><small>كل أيام الأسبوع</small></span>
     <span class="daily-arrow">↗</span>
   </label>
+</div>
+
+<!-- اختيار عدد الساعات (أقصى عدد 5 ساعات) -->
+<div class="field auto-height days-field">
+  <div class="days-title">
+    <div>
+      <label>عدد الساعات اليومية</label>
+      <small>اختر عدد ساعات الجلسة (حد أقصى 5 ساعات)</small>
+    </div>
+  </div>
+
+  <div class="hours-grid" id="hoursGrid">
+    <label class="hour-card">
+      <input type="radio" name="hours" value="1 ساعة" required>
+      <span class="hour-inner"><b>1</b><small>ساعة</small></span>
+    </label>
+    <label class="hour-card">
+      <input type="radio" name="hours" value="2 ساعات">
+      <span class="hour-inner"><b>2</b><small>ساعات</small></span>
+    </label>
+    <label class="hour-card">
+      <input type="radio" name="hours" value="3 ساعات">
+      <span class="hour-inner"><b>3</b><small>ساعات</small></span>
+    </label>
+    <label class="hour-card">
+      <input type="radio" name="hours" value="4 ساعات">
+      <span class="hour-inner"><b>4</b><small>ساعات</small></span>
+    </label>
+    <label class="hour-card">
+      <input type="radio" name="hours" value="5 ساعات">
+      <span class="hour-inner"><b>5</b><small>ساعات</small></span>
+    </label>
+  </div>
 </div>
 
 <div class="field">
@@ -299,7 +343,6 @@ img,svg,video,canvas{max-width:100%}
     }
   }
 
-
   // تفاعل اختيار الأيام
   const dayInputs = document.querySelectorAll('input[name="day"]');
   const dailyCheck = document.getElementById('dailyCheck');
@@ -358,6 +401,10 @@ img,svg,video,canvas{max-width:100%}
       daysValue = selectedDays.join('، ');
     }
 
+    // جلب عدد الساعات المختارة
+    const selectedHourInput = document.querySelector('input[name="hours"]:checked');
+    const hoursValue = selectedHourInput ? selectedHourInput.value : '1 ساعة';
+
     const data = {
       name: document.getElementById('parent').value,
       phone: document.getElementById('phone').value,
@@ -365,6 +412,7 @@ img,svg,video,canvas{max-width:100%}
       age: ageValue,
       nationality: document.getElementById('nationality').value,
       days: daysValue,
+      hours: hoursValue,
       type: document.getElementById('type').value,
       attendanceStatus: "قيد الانتظار",
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -400,6 +448,7 @@ img,svg,video,canvas{max-width:100%}
     }
   });
 </script>
+
   <!-- نافذة تنبيه انقطاع الإنترنت -->
 <div id="offlineOverlay" style="display:none; position:fixed; inset:0; z-index:99999; background:linear-gradient(145deg,rgba(0,50,120,.92),rgba(0,100,200,.95)); backdrop-filter:blur(15px); display:flex; align-items:center; justify-content:center; padding:20px; text-align:center;">
   <div style="background:linear-gradient(145deg,rgba(145,224,255,.3),rgba(16,121,216,.4)); border:1.5px solid rgba(255,255,255,.8); border-radius:30px; padding:30px 22px; max-width:400px; width:100%; box-shadow:0 15px 35px rgba(0,20,70,.5); color:#fff;">
