@@ -1,104 +1,234 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
+  <!-- استدعاء مكتبات فايربيس -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0879d5">
-<title>مركز الربيع | التقارير الطبية</title>
+<title>مركز الربيع | تقاريري والطلبات</title>
 <style>
+:root{--blue:#087ed8;--deep:#0755b4;--glass:rgba(145,220,255,.28);--line:rgba(255,255,255,.72)}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Tahoma,Arial,sans-serif;color:#fff}
-body{min-height:100svh;background:radial-gradient(ellipse at 60% 22%,#55c6ff 0,transparent 38%),radial-gradient(ellipse at 0 85%,#0062c5 0,transparent 48%),linear-gradient(145deg,#08baff,#087ad8 43%,#0054b4 75%,#0a8ce6);overflow-x:hidden;padding:20px 15px}
-.page{width:min(100%,680px);margin:auto;padding-bottom:70px}
-.brand{text-align:center;margin-bottom:20px}
-.brand h1{font-size:26px;margin:0 0 5px;font-weight:900;text-shadow:0 2px 4px #0753a6}
-.brand p{margin:0;font-size:14px;color:#e6faff}
+body{min-height:100svh;background:linear-gradient(145deg,rgba(0,111,220,.72),rgba(0,83,181,.78)),url('assets/login-background.jpg') center center/cover fixed no-repeat;overflow-x:hidden}
+body:before,body:after{content:"";position:fixed;inset:-15%;pointer-events:none;z-index:-1}
+body:before{background:repeating-linear-gradient(155deg,transparent 0 110px,rgba(255,255,255,.14) 112px,transparent 118px 190px);transform:rotate(-4deg)}
+body:after{background:radial-gradient(ellipse at 20% 10%,rgba(255,255,255,.32),transparent 28%),radial-gradient(ellipse at 90% 55%,rgba(66,219,255,.26),transparent 35%);filter:blur(12px)}
+.glow{position:fixed;height:2px;width:120vw;background:#8cf5ff;box-shadow:0 0 14px 4px #28dcff;transform:rotate(-27deg);left:-10vw;top:6%;opacity:.8;pointer-events:none}
+.page{width:min(100%,590px);margin:auto;padding:20px 16px 18px;position:relative}
+.brand{text-align:center;margin:0 auto 15px}
+.brand h1{font-size:clamp(24px,5vw,32px);margin:0;font-weight:900;text-shadow:0 2px 4px #0753a6}
+.brand p{margin:3px 0;font-weight:bold;font-size:14px;color:#e6faff;text-shadow:0 1px 3px #0755a0}
 
-.glass{background:linear-gradient(135deg,rgba(135,219,255,.35),rgba(13,116,215,.4));border:1px solid rgba(255,255,255,.66);border-radius:25px;padding:25px 20px;margin-bottom:15px;box-shadow:inset 0 1px 8px rgba(255,255,255,.3),0 8px 20px rgba(0,40,110,.16);backdrop-filter:blur(10px);text-align:center}
-.empty-state{font-size:16px;line-height:1.8;color:#eafaff;padding:20px 0}
-.empty-icon{font-size:45px;margin-bottom:12px;display:block}
+/* أزرار التبديل (Tabs) */
+.tabs-container{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px}
+.tab-btn{height:48px;border-radius:24px;border:1.5px solid rgba(255,255,255,.7);background:rgba(255,255,255,0.15);color:#fff;font-size:16px;font-weight:bold;cursor:pointer;backdrop-filter:blur(8px);transition:.25s ease}
+.tab-btn.active{background:linear-gradient(90deg,#04a4f3,#0873ec);border-color:#fff;box-shadow:0 4px 15px rgba(0,40,110,.3)}
 
-.back-btn{display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;background:linear-gradient(90deg,#04a4f3,#0873ec,#11a9f1);color:#fff;padding:15px;border-radius:32px;text-decoration:none;font-size:18px;font-weight:bold;margin-top:25px;border:1px solid rgba(255,255,255,.8);box-shadow:inset 0 1px 6px #a9f3ff,0 0 18px rgba(0,225,255,.35);cursor:pointer}
+.panel{background:linear-gradient(145deg,rgba(145,224,255,.53),rgba(16,121,216,.46));border:1.5px solid rgba(255,255,255,.8);border-radius:34px;padding:20px;box-shadow:inset 0 1px 8px rgba(255,255,255,.65),0 12px 35px rgba(0,42,120,.28);backdrop-filter:blur(12px);margin-bottom:15px}
+.panel-head{display:flex;align-items:center;gap:12px;margin-bottom:15px}
+.person-icon{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);flex-shrink:0}
+.panel-head h2{font-size:22px;margin:0 0 4px}.panel-head small{font-size:11px;color:#e9faff}
 
-.nav{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);width:min(95%,680px);border-radius:50px;min-height:75px;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding:5px;background:linear-gradient(120deg,rgba(159,224,255,.4),rgba(4,102,200,.46));border:1px solid rgba(255,255,255,.6);box-shadow:inset 0 1px 8px rgba(255,255,255,.35),0 8px 20px rgba(0,30,90,.2);backdrop-filter:blur(12px);z-index:100}
-.nav a{text-decoration:none;color:#bdeeff;font:12px Tahoma,Arial;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
-.nav .ni{font-size:22px;line-height:1}
-.nav a.active{color:#fff;font-weight:bold}
+.field{background:linear-gradient(105deg,rgba(230,249,255,.72),rgba(102,192,248,.55));border:1px solid rgba(255,255,255,.78);border-radius:24px;padding:12px 14px;margin:12px 0;color:#fff}
+.field label{display:block;font-size:13px;font-weight:bold;margin-bottom:6px;color:#d6f4ff}
+.field select, .field textarea{width:100%;background:rgba(0,0,0,0.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:10px;border-radius:14px;font-size:14px;outline:none;font-family:Tahoma,Arial}
+.field textarea{resize:none;height:90px}
+.field select option{color:#0755a8}
+
+.btn-submit{width:100%;height:52px;border-radius:28px;border:1px solid rgba(255,255,255,.9);background:linear-gradient(90deg,#04a4f3,#0873ec);color:white;font-size:17px;font-weight:bold;cursor:pointer;margin-top:10px;box-shadow:0 4px 15px rgba(0,0,0,0.2)}
+.msg{text-align:center;font-size:14px;margin-top:10px;font-weight:bold;color:#e6faff;display:none}
+
+/* تصميم بطاقات عرض التقارير الواردة */
+.report-card{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.4);border-radius:20px;padding:15px;margin-bottom:12px}
+.report-card h3{font-size:18px;margin:0 0 6px;color:#fff}
+.report-card p{font-size:14px;color:#e6faff;margin:0 0 10px;line-height:1.5}
+.report-btn{display:inline-block;background:#16cfc8;color:#fff;padding:8px 16px;border-radius:12px;text-decoration:none;font-weight:bold;font-size:13px}
+
+.nav-back{display:block;text-align:center;margin-top:20px;color:#fff;text-decoration:none;font-weight:bold;font-size:15px;background:rgba(255,255,255,0.15);padding:12px;border-radius:20px;border:1px solid rgba(255,255,255,0.4);backdrop-filter:blur(5px)}
+.footer{text-align:center;font-weight:bold;font-size:13px;margin:15px auto 0;color:#eafaff}
 </style>
-
-<!-- استدعاء مكتبات Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
+<div class="glow"></div>
 <main class="page">
-<header class="brand">
-  <h1>التقارير الطبية ومتابعة الحالة</h1>
-  <p>مركز الربيع للعلاج الطبيعي وتأهيل الأطفال</p>
-</header>
+  <header class="brand">
+    <h1>التقارير والطلبات</h1>
+    <p>مركز الربيع للعلاج الطبيعي وتأهيل الأطفال</p>
+  </header>
 
-<div class="glass" id="reportCard">
-  <div class="empty-state">
-    <span class="empty-icon">📂</span>
-    <strong>لا توجد تقارير متاحة حالياً</strong>
-    <p style="margin-top:10px; font-size:14px; color:#d4f3ff;">ستظهر هنا تقارير وملاحظات الطبيب المعالج فور إضافتها لتحديث حالة طفلك.</p>
+  <!-- الأزرار العلوية للتبديل -->
+  <div class="tabs-container">
+    <button class="tab-btn active" onclick="switchTab('myReports', this)">📂 تقاريري</button>
+    <button class="tab-btn" onclick="switchTab('requestReport', this)">➕ طلب تقرير</button>
   </div>
-</div>
 
-<a href="index-home.html" class="back-btn">العودة إلى الصفحة الرئيسية 🏠</a>
+  <!-- قسم تقاريري (التي أرسلتها الإدارة) -->
+  <div id="myReportsSection" class="panel">
+    <div class="panel-head">
+      <div class="person-icon">📋</div>
+      <div>
+        <h2>تقاريري الطبية والإدارية</h2>
+        <small>التقارير الصادرة من المركز لطفلك</small>
+      </div>
+    </div>
+    <div id="reportsList">
+      <p style="text-align:center; padding:20px;">⏳ جاري البحث عن تقارير جديدة...</p>
+    </div>
+  </div>
+
+  <!-- قسم طلب تقرير جديد -->
+  <div id="requestReportSection" class="panel" style="display:none;">
+    <div class="panel-head">
+      <div class="person-icon">📄</div>
+      <div>
+        <h2>طلب تقرير جديد</h2>
+        <small>اختر نوع التقرير المطلوب وسيتم تجهيزه من قبل الإدارة</small>
+      </div>
+    </div>
+
+    <form id="reportForm">
+      <div class="field">
+        <label for="reportType">نوع التقرير المطلوب</label>
+        <select id="reportType" required>
+          <option value="">اختر نوع التقرير</option>
+          <option value="تقرير طبي">تقرير طبي (حالة الطفل وتطور الجلسات)</option>
+          <option value="تقرير إداري">تقرير إداري (إثبات قيد / تفاصيل الاشتراكات)</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="reportNotes">ملاحظات إضافية (اختياري)</label>
+        <textarea id="reportNotes" placeholder="اكتب أي تفاصيل إضافية تحتاجها في التقرير..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-submit">إرسال الطلب للإدارة 🚀</button>
+      <p id="msg" class="msg"></p>
+    </form>
+  </div>
+
+  <a href="index-home.html" class="nav-back">⌂ العودة إلى الرئيسية</a>
+  
+  <footer class="footer">مركز الربيع للعلاج الطبيعي وتأهيل الأطفال</footer>
 </main>
 
-<nav class="nav">
-<a href="settings.html"><span class="ni">⚙</span>الإعدادات</a>
-<a href="reports.html" class="active"><span class="ni">▤</span>التقارير</a>
-<a href="policies.html"><span class="ni">♧</span>السياسات</a>
-<a href="index-home.html"><span class="ni">⌂</span>الرئيسية</a>
-</nav>
-
 <script>
-// إعدادات Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCTPQTbz6h9oVMo1N4Y_3r_RAi1RCXSEhM",
-  authDomain: "el-rabea.firebaseapp.com",
-  projectId: "el-rabea",
-  storageBucket: "el-rabea.firebasestorage.app",
-  messagingSenderId: "527658441562",
-  appId: "1:527658441562:web:ef9d9bd5461d87eeb63163",
-  measurementId: "G-2592BQ0ZS7"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// فحص وجود تقارير مرفوعة من الطبيب في قاعدة البيانات
-async function loadReport() {
-  try {
-    const localData = JSON.parse(localStorage.getItem('alrabeaPatient') || 'null');
-    if (!localData) {
-      window.location.href = 'index.html';
-      return;
-    }
-
-    if (localData.id) {
-      const docSnap = await db.collection("patients").doc(localData.id).get();
-      if (docSnap.exists) {
-        const data = docSnap.data();
-        
-        // إذا قام الطبيب بإضافة حقل doctorReport أو reportText في فايربيس، سيتم عرضه هنا
-        if (data.doctorReport || data.reportText) {
-          const reportContent = data.doctorReport || data.reportText;
-          document.getElementById('reportCard').innerHTML = `
-            <h3 style="color:#c9f2ff; margin-top:0; text-align:right; font-size:19px;">📄 تقرير الطبيب المعالج</h3>
-            <p style="text-align:right; font-size:16px; line-height:1.8; color:#fff; white-space: pre-line; margin-top:12px;">${reportContent}</p>
-          `;
-        }
-      }
-    }
-  } catch (e) {
-    console.error("خطأ في جلب التقرير:", e);
+  // فحص تسجيل الدخول
+  const patientData = JSON.parse(localStorage.getItem('alrabeaPatient'));
+  if (!patientData) {
+    window.location.href = 'index.html';
   }
-}
 
-loadReport();
+  const firebaseConfig = {
+    apiKey: "AIzaSyCTPQTbz6h9oVMo1N4Y_3r_RAi1RCXSEhM",
+    authDomain: "el-rabea.firebaseapp.com",
+    projectId: "el-rabea",
+    storageBucket: "el-rabea.firebasestorage.app",
+    messagingSenderId: "527658441562",
+    appId: "1:527658441562:web:ef9d9bd5461d87eeb63163",
+    measurementId: "G-2592BQ0ZS7"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  // وظيفة التبديل بين التبويبات
+  function switchTab(tabName, btnElement) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    btnElement.classList.add('active');
+
+    if (tabName === 'myReports') {
+      document.getElementById('myReportsSection').style.display = 'block';
+      document.getElementById('requestReportSection').style.display = 'none';
+      loadPatientReports();
+    } else {
+      document.getElementById('myReportsSection').style.display = 'none';
+      document.getElementById('requestReportSection').style.display = 'block';
+    }
+  }
+
+  // جلب تقارير الطفل الخاصة من قاعدة البيانات
+  async function loadPatientReports() {
+    const container = document.getElementById('reportsList');
+    try {
+      // نفترض أن التقارير تُحفظ في مجموعة اسمها "reports" وتكون مرتبطة بـ patientId
+      const snapshot = await db.collection("reports")
+        .where("patientId", "==", patientData.id)
+        .get();
+
+      if (snapshot.empty) {
+        container.innerHTML = '<p style="text-align:center; padding:20px; color:#eafaff;">لا توجد تقارير مرسلة حتى الآن.</p>';
+        return;
+      }
+
+      container.innerHTML = '';
+      snapshot.forEach(doc => {
+        const rep = doc.data();
+        const card = document.createElement('div');
+        card.className = 'report-card';
+        card.innerHTML = `
+          <h3>${rep.title || 'تقرير جديد'}</h3>
+          <p>${rep.description || 'لا توجد تفاصيل إضافية.'}</p>
+          ${rep.fileUrl ? `<a href="${rep.fileUrl}" target="_blank" class="report-btn">📥 تحميل / عرض التقرير</a>` : '<span style="color:#ffd7d7; font-size:13px;">قيد التجهيز من الإدارة</span>'}
+        `;
+        container.appendChild(card);
+      });
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = '<p style="text-align:center; padding:20px; color:#ffdddd;">حدث خطأ أثناء تحميل التقارير.</p>';
+    }
+  }
+
+  // إرسال طلب تقرير جديد
+  document.getElementById('reportForm').addEventListener('submit', async function(e){
+    e.preventDefault();
+    const btn = document.querySelector('.btn-submit');
+    const msg = document.getElementById('msg');
+    
+    const reportType = document.getElementById('reportType').value;
+    const reportNotes = document.getElementById('reportNotes').value;
+
+    const requestData = {
+      patientId: patientData.id,
+      parentName: patientData.name,
+      childName: patientData.child,
+      phone: patientData.phone,
+      reportType: reportType,
+      notes: reportNotes,
+      status: "قيد المراجعة",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    try {
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+      msg.style.display = 'block';
+      msg.textContent = '⏳ جاري إرسال طلبك للإدارة...';
+
+      await db.collection("reportRequests").add(requestData);
+
+      msg.textContent = '✅ تم إرسال طلبك بنجاح! ستتواصل معك الإدارة قريباً.';
+      document.getElementById('reportForm').reset();
+      
+      setTimeout(() => {
+        msg.style.display = 'none';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      }, 3500);
+
+    } catch (err) {
+      console.error(err);
+      msg.style.display = 'block';
+      msg.textContent = '❌ حدث خطأ، يرجى المحاولة مرة أخرى.';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  });
+
+  // تحميل التقارير تلقائياً عند فتح الصفحة
+  loadPatientReports();
 </script>
 </body>
 </html>
